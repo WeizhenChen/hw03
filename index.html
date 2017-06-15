@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>hw03</title>
+    <script src="https://d3js.org/d3.v3.js"></script>
+    <style>
+        svg {
+            margin: 30px 10px;
+            display: block;
+        }
+        
+        div#data-text {
+            margin: 30px 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div id="data-text"></div>
+
+    <input type="button" value="新增" onclick="update()">
+    <input type="button" value="移除" onclick="remove()"><br>
+
+    <script>
+        //1.====================================================================================
+        d3.json("invoice-taipei.json", function(data) {
+            var body = d3.select("body")
+                .append("svg")
+                .attr({
+                    width: 900,
+                    height: 250
+                });
+
+            var f_data = data.filter(function(d) {
+                return d.amount > 1000000000 && d.cid == "A" && d.date.substr(0, 6) == "2016/8";
+            });
+
+            for (var i = 0; i < f_data.length; i++) {
+                body.append("text")
+                    .attr({
+                        x: 0,
+                        y: (20 * i) + 15,
+                        "font-size": "13px"
+                    })
+                    .text(f_data[i].industry);
+                body.append("rect")
+                    .attr({
+                        x: 300,
+                        y: (20 * i) + 2,
+                        width: f_data[i].amount / 100000000,
+                        height: 18,
+                        fill: "red"
+                    });
+            }
+        });
+
+        //2.====================================================================================
+        var arr = [85, 60, 99, 49, 77, 82];
+
+        bind(arr, "body>div#data-text", "div");
+        render();
+
+        //3.====================================================================================
+        var w = 900,
+            h = 250,
+            p = 100;
+
+        svg(w, h, "bar-chart");
+        bind(arr, "svg#bar-chart", "rect");
+        bind(arr, "svg#bar-chart", "text");
+        render_2();
+
+        function svg(w, h, sid) {
+
+            d3.select("body")
+                .append("svg")
+                .attr({
+                    width: w,
+                    height: h,
+                    id: sid
+                });
+
+        }
+
+        function bind(data, sid, label) {
+
+            var selection = d3.select(sid)
+                .selectAll(label)
+                .data(data);
+
+            selection.enter().append(label);
+
+            selection.exit().remove();
+
+        }
+
+        function render() {
+
+            d3.selectAll("div#data-text>div")
+                .style({
+                    color: function(d) {
+                        if (d < 70) {
+                            return "red";
+                        } else {
+                            return "black";
+                        }
+                    }
+                })
+                .text(function(d, i) {
+                    return i + ":" + d;
+                });
+
+        }
+
+        function render_2() {
+
+            //rect======================================================
+            d3.selectAll("svg#bar-chart>rect")
+                .attr({
+                    x: function(d, i) {
+                        return 45 * i + p;
+                    },
+                    y: function(d) {
+                        return h - d - p;
+                    },
+                    width: 40,
+                    height: function(d) {
+                        return d;
+                    },
+                    fill: function(d) {
+                        if (d < 70) {
+                            return "red";
+                        } else {
+                            return "lightgreen";
+                        }
+                    }
+                });
+
+            //text======================================================
+            d3.selectAll("svg#bar-chart>text")
+                .attr({
+                    x: function(d, i) {
+                        return 45 * i + p + 12;
+                    },
+                    y: function(d) {
+                        return h - p + 20;
+                    }
+                })
+                .text(function(d) {
+                    return d;
+                });
+
+        }
+
+        function update() {
+            var num = random(10, 100);
+            arr.push(num);
+            bind(arr, "svg#bar-chart", "rect");
+            bind(arr, "svg#bar-chart", "text");
+            render_2();
+        }
+
+        function remove() {
+            arr.pop();
+            bind(arr, "svg#bar-chart", "rect");
+            bind(arr, "svg#bar-chart", "text");
+            render_2();
+        }
+
+        function random(n, m) {
+
+            var xScale = d3.scale.linear()
+                .domain([0, 1])
+                .rangeRound([n, m]);
+
+            return xScale(Math.random());
+
+        }
+
+        //4.====================================================================================
+        var index = ["中國國民黨", "民主進步黨", "時代力量", "無黨團結聯盟", "親民黨"]
+        var color = ["blue", "green", "yellow", "gray", "orange"]
+
+        var xScale = d3.scale.ordinal()
+            .domain(index)
+            .range(color);
+
+        console.log(xScale("無黨團結聯盟"));
+
+        svg(w, h, "bar-chart-2");
+        bind(index, "svg#bar-chart-2", "rect");
+        bind(index, "svg#bar-chart-2", "text");
+        render_3();
+
+        function render_3() {
+
+            //text======================================================
+            d3.selectAll("svg#bar-chart-2>text")
+                .attr({
+                    x: 40,
+                    y: function(d, i) {
+                        return (35 * i) + 19;
+                    },
+                    "font-size": "13px"
+                })
+                .text(function(d) {
+                    return d;
+                });
+
+            //rect======================================================
+            d3.selectAll("svg#bar-chart-2>rect")
+                .attr({
+                    x: 0,
+                    y: function(d, i) {
+                        return 35 * i;
+                    },
+                    width: 30,
+                    height: 30,
+                    fill: function(d) {
+                        return xScale(d);
+                    }
+                });
+
+        }
+
+    </script>
+
+</body>
+
+</html>
