@@ -26,14 +26,16 @@
     <input type="button" value="移除" onclick="remove()"><br>
 
     <script>
+        var w = 700,
+            h = 300,
+            p = 100;
+
         //1.====================================================================================
         d3.json("invoice-taipei.json", function(data) {
-            var body = d3.select("body")
-                .append("svg")
-                .attr({
-                    width: 900,
-                    height: 250
-                });
+
+            svg(w, h, "bar-chart-3");
+            borber("bar-chart-3");
+            var body = d3.select("svg#bar-chart-3");
 
             var f_data = data.filter(function(d) {
                 return d.amount > 1000000000 && d.cid == "A" && d.date.substr(0, 6) == "2016/8";
@@ -42,20 +44,21 @@
             for (var i = 0; i < f_data.length; i++) {
                 body.append("text")
                     .attr({
-                        x: 0,
-                        y: (20 * i) + 15,
+                        x: 20,
+                        y: (20 * i) + 35,
                         "font-size": "13px"
                     })
                     .text(f_data[i].industry);
                 body.append("rect")
                     .attr({
-                        x: 300,
-                        y: (20 * i) + 2,
+                        x: 250,
+                        y: (20 * i) + 22,
                         width: f_data[i].amount / 100000000,
                         height: 18,
                         fill: "red"
                     });
             }
+
         });
 
         //2.====================================================================================
@@ -65,15 +68,29 @@
         render();
 
         //3.====================================================================================
-        var w = 900,
-            h = 250,
-            p = 100;
-
         svg(w, h, "bar-chart");
         bind(arr, "svg#bar-chart", "rect");
         bind(arr, "svg#bar-chart", "text");
         render_2();
 
+        borber("bar-chart");
+
+        //4.====================================================================================
+        var index = ["中國國民黨", "民主進步黨", "時代力量", "無黨團結聯盟", "親民黨"];
+        var color = ["blue", "green", "yellow", "gray", "orange"];
+
+        var xScale = d3.scale.ordinal()
+            .domain(index)
+            .range(color);
+
+        svg(w, h, "bar-chart-2");
+        bind(index, "svg#bar-chart-2", "rect");
+        bind(index, "svg#bar-chart-2", "text");
+        render_3();
+
+        borber("bar-chart-2");
+
+        //function==============================================================================
         function svg(w, h, sid) {
 
             d3.select("body")
@@ -81,7 +98,8 @@
                 .attr({
                     width: w,
                     height: h,
-                    id: sid
+                    id: sid,
+                    border: 1
                 });
 
         }
@@ -89,10 +107,14 @@
         function bind(data, sid, label) {
 
             var selection = d3.select(sid)
-                .selectAll(label)
+                .selectAll(label + ".dataSet")
                 .data(data);
 
-            selection.enter().append(label);
+            selection.enter()
+                .append(label)
+                .attr({
+                    class: "dataSet"
+                });
 
             selection.exit().remove();
 
@@ -119,7 +141,7 @@
         function render_2() {
 
             //rect======================================================
-            d3.selectAll("svg#bar-chart>rect")
+            d3.selectAll("svg#bar-chart>rect.dataSet")
                 .attr({
                     x: function(d, i) {
                         return 45 * i + p;
@@ -181,29 +203,14 @@
 
         }
 
-        //4.====================================================================================
-        var index = ["中國國民黨", "民主進步黨", "時代力量", "無黨團結聯盟", "親民黨"]
-        var color = ["blue", "green", "yellow", "gray", "orange"]
-
-        var xScale = d3.scale.ordinal()
-            .domain(index)
-            .range(color);
-
-        console.log(xScale("無黨團結聯盟"));
-
-        svg(w, h, "bar-chart-2");
-        bind(index, "svg#bar-chart-2", "rect");
-        bind(index, "svg#bar-chart-2", "text");
-        render_3();
-
         function render_3() {
 
             //text======================================================
             d3.selectAll("svg#bar-chart-2>text")
                 .attr({
-                    x: 40,
+                    x: 60,
                     y: function(d, i) {
-                        return (35 * i) + 19;
+                        return (35 * i) + 39;
                     },
                     "font-size": "13px"
                 })
@@ -214,15 +221,36 @@
             //rect======================================================
             d3.selectAll("svg#bar-chart-2>rect")
                 .attr({
-                    x: 0,
+                    x: 20,
                     y: function(d, i) {
-                        return 35 * i;
+                        return (35 * i) + 20;
                     },
                     width: 30,
                     height: 30,
                     fill: function(d) {
                         return xScale(d);
                     }
+                });
+
+        }
+
+        function borber(sid) {
+
+            //框線
+            d3.select("body")
+                .select("svg#" + sid)
+                .append("rect")
+                .attr({
+                    x: 0,
+                    y: 0,
+                    height: h,
+                    width: w,
+                    class: "border"
+                })
+                .style({
+                    stroke: "black",
+                    "stroke-width": 1,
+                    "fill-opacity": "0"
                 });
 
         }
